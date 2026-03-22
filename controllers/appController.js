@@ -298,11 +298,43 @@ exports.guardarArticuloInventario = async (req, res) => {
         );
         //await Promise.all(detallePromesas);
         await connection.commit();
+        return res.status(200).json({ 
+            mensaje: 'Guardado con éxito',
+            colector: colector 
+        });
     } catch (error) {
         await connection.rollback();
         console.error(error);
         res.status(500).json({ mensaje: 'Error al guardar detalle' });
     } finally {
         connection.release();
+    }
+};
+exports.mostrarArticulosInventario = async (req, res) => {
+    const colector = req.params.id;
+    console.log(colector);
+    try {
+        const [rows] = await db.query(
+        'SELECT * FROM ARTICULOS_INV_FISICO WHERE RESPONSABLE = ?',
+        [colector] // <--- Pasamos el texto como parámetro
+        );
+
+        // Siempre 200, aunque venga vacío
+        res.json(rows)
+        console.log(rows);
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ mensaje: 'Error del servidor' })
+    }
+};
+exports.mostrarColectores = async (req, res) => {
+    try {
+        const [rows] = await db.query(
+        'SELECT * FROM COLECTORES '
+        );
+        res.json(rows)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ mensaje: 'Error del servidor' })
     }
 };
