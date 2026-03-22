@@ -281,3 +281,28 @@ exports.cancelarCotizacion = async (req, res) => {
         res.status(500).json({ mensaje: 'Error del servidor al intentar cancelar' });
     }
 };
+exports.guardarArticuloInventario = async (req, res) => {
+    console.log('Cuerpo de la solicitud:', req.body);
+    console.log('Content-Type recibido:', req.get('Content-Type'));
+    const {colector, zona, codigo, descripcion, cantidad, almacen} = req.body;
+    
+    const connection = await db.getConnection(); // Obtener conexión para transacción
+
+    try {
+        await connection.beginTransaction();
+
+        // 1. Insertar Encabezado
+        const [Res] = await connection.query(
+            'INSERT INTO ARTICULOS_INV_FISICO (CLAVE_ARTICULO, DESCRIPCION, CONTADO, ZONA, RESPONSABLE, ALMACEN) VALUES (?, ?, ?, ?, ?, ?)',
+            [codigo, descripcion, cantidad, zona, colector, almacen]
+        );
+        //await Promise.all(detallePromesas);
+        await connection.commit();
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ mensaje: 'Error al guardar detalle' });
+    } finally {
+        connection.release();
+    }
+};
