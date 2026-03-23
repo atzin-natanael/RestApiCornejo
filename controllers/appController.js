@@ -293,7 +293,7 @@ exports.guardarArticuloInventario = async (req, res) => {
 
         // 1. Insertar Encabezado
         const [Res] = await connection.query(
-            'INSERT INTO ARTICULOS_INV_FISICO (CLAVE_ARTICULO, DESCRIPCION, CONTADO, ZONA, RESPONSABLE, ALMACEN) VALUES (?, ?, ?, ?, ?, ?)',
+            'INSERT INTO ARTICULOS_INV_FISICO (CLAVE_ARTICULO, DESCRIPCION, CONTADO, ZONA, COLECTOR_ID, ALMACEN) VALUES (?, ?, ?, ?, ?, ?)',
             [codigo, descripcion, cantidad, zona, colector, almacen]
         );
         //await Promise.all(detallePromesas);
@@ -311,12 +311,16 @@ exports.guardarArticuloInventario = async (req, res) => {
     }
 };
 exports.mostrarArticulosInventario = async (req, res) => {
-    const colector = req.params.id;
-    console.log(colector);
+    const colectorId = req.params.id;
     try {
         const [rows] = await db.query(
-        'SELECT * FROM ARTICULOS_INV_FISICO WHERE RESPONSABLE = ?',
-        [colector] // <--- Pasamos el texto como parámetro
+            `SELECT 
+                a.*, 
+                c.COLECTOR as NOMBRE_COLECTOR 
+             FROM ARTICULOS_INV_FISICO a
+             INNER JOIN COLECTORES c ON a.COLECTOR_ID = c.COLECTOR_ID
+             WHERE a.COLECTOR_ID = ?`,
+            [colectorId]
         );
 
         // Siempre 200, aunque venga vacío
@@ -338,3 +342,16 @@ exports.mostrarColectores = async (req, res) => {
         res.status(500).json({ mensaje: 'Error del servidor' })
     }
 };
+exports.mostrarColectoresById = async (req, res) => {
+    console.log(req.params)
+    const [rows] = await db.query(
+        'SELECT * FROM COLECTORES WHERE COLECTOR_ID = ?',
+        [req.params.id]
+    )
+
+    if (rows.length === 0) {
+        return res.status(404).json({ mensaje: 'No existe' })
+    }
+
+    res.json(rows)
+}
