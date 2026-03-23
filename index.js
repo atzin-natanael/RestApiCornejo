@@ -16,14 +16,21 @@ const app = express()
 //habilitar Body parser
 // Estos dos son los "traductores"
 // 2. Configura el permiso ANTES de las rutas
+const whitelist = [
+    'http://localhost:3001', 
+    'http://localhost:8000', 
+    'https://paginainventariofisico.onrender.com' // Agrega tu URL de producción aquí
+];
+
 app.use(cors({
-    origin: 'http://localhost:3001', // El origen de tu página web
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
-    credentials: true
-}));
-app.use(cors({
-    origin: 'http://localhost:8000', // El origen de tu página web
+    origin: function (origin, callback) {
+        // Permitir peticiones sin origen (como Postman o Server-to-Server)
+        if (!origin || whitelist.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('No permitido por CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
     credentials: true
