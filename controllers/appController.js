@@ -371,8 +371,10 @@ exports.mostrarColectoresById = async (req, res) => {
 exports.mostrarRegistros = async (req, res) => {
     try {
         const [rows] = await db.query(
-        'SELECT * FROM ARTICULOS_INV_FISICO '
-        );
+            `SELECT a.*, c.COLECTOR as NOMBRE_COLECTOR
+            FROM ARTICULOS_INV_FISICO a
+            INNER JOIN COLECTORES c ON a.COLECTOR_ID = c.COLECTOR_ID`
+            );
         res.json(rows)
     } catch (error) {
         console.error(error)
