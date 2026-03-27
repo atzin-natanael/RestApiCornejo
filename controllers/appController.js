@@ -367,4 +367,15 @@ exports.mostrarColectoresById = async (req, res) => {
     }
 
     res.json(rows)
-}
+};
+exports.mostrarRegistros = async (req, res) => {
+    try {
+        const [rows] = await db.query(
+        'SELECT * FROM ARTICULOS_INV_FISICO '
+        );
+        res.json(rows)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ mensaje: 'Error del servidor' })
+    }
+};
