@@ -415,7 +415,7 @@ exports.eliminarRegistro = async (req, res) => {
 
     try {
         // Ejecutamos la eliminación
-        const [result] = await connection.query(
+        const [result] = await db.query(
             'DELETE FROM ARTICULOS_INV_FISICO WHERE ID = ?', 
             [id]
         );
