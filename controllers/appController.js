@@ -398,9 +398,11 @@ exports.mostrarColectoresById = async (req, res) => {
 exports.mostrarRegistros = async (req, res) => {
     try {
         const [rows] = await db.query(
-            `SELECT a.*, c.COLECTOR as NOMBRE_COLECTOR
+            `SELECT a.*, c.COLECTOR as NOMBRE_COLECTOR,
+            z.ZONA as NOMBRE_ZONA
             FROM ARTICULOS_INV_FISICO a
-            INNER JOIN COLECTORES c ON a.COLECTOR_ID = c.COLECTOR_ID`
+            INNER JOIN COLECTORES c ON a.COLECTOR_ID = c.COLECTOR_ID
+            INNER JOIN ZONAS z ON a.ZONA_ID = z.ZONA_ID`
             );
         res.json(rows)
     } catch (error) {
