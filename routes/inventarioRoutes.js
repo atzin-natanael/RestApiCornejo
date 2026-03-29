@@ -6,6 +6,8 @@ router.post('/guardarRegistro',codigosController.guardarArticuloInventario)
 router.get('/mostrarTabla/:id', codigosController.mostrarArticulosInventario)
 router.get('/colectores', codigosController.mostrarColectores)
 router.get('/colectores/:id', codigosController.mostrarColectoresById)
+router.get('/zonas', codigosController.mostrarZonas)
+router.get('/zonas/:id', codigosController.mostrarZonasById)
 router.get('/mostrarRegistros', codigosController.mostrarRegistros)
 
 

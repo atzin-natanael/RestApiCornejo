@@ -306,7 +306,7 @@ exports.guardarArticuloInventario = async (req, res) => {
 
         // 1. Insertar Encabezado
         const [Res] = await connection.query(
-            'INSERT INTO ARTICULOS_INV_FISICO (CLAVE_ARTICULO, DESCRIPCION, CONTADO, ZONA, COLECTOR_ID, ALMACEN) VALUES (?, ?, ?, ?, ?, ?)',
+            'INSERT INTO ARTICULOS_INV_FISICO (CLAVE_ARTICULO, DESCRIPCION, CONTADO, ZONA_ID, COLECTOR_ID, ALMACEN) VALUES (?, ?, ?, ?, ?, ?)',
             [codigo, descripcion, cantidad, zona, colector, almacen]
         );
         //await Promise.all(detallePromesas);
@@ -329,9 +329,11 @@ exports.mostrarArticulosInventario = async (req, res) => {
         const [rows] = await db.query(
             `SELECT 
                 a.*, 
-                c.COLECTOR as NOMBRE_COLECTOR 
+                c.COLECTOR as NOMBRE_COLECTOR,
+                z.ZONA as NOMBRE_ZONA
              FROM ARTICULOS_INV_FISICO a
              INNER JOIN COLECTORES c ON a.COLECTOR_ID = c.COLECTOR_ID
+             INNER JOIN ZONAS z ON a.ZONA_ID = z.ZONA_ID
              WHERE a.COLECTOR_ID = ?`,
             [colectorId]
         );
@@ -355,6 +357,30 @@ exports.mostrarColectores = async (req, res) => {
         res.status(500).json({ mensaje: 'Error del servidor' })
     }
 };
+exports.mostrarZonas = async (req, res) => {
+    try {
+        const [rows] = await db.query(
+        'SELECT * FROM ZONAS '
+        );
+        res.json(rows)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ mensaje: 'Error del servidor' })
+    }
+};
+exports.mostrarZonasById = async (req, res) => {
+    console.log(req.params)
+    const [rows] = await db.query(
+        'SELECT * FROM ZONAS WHERE ZONA_ID = ?',
+        [req.params.id]
+    )
+
+    if (rows.length === 0) {
+        return res.status(404).json({ mensaje: 'No existe' })
+    }
+
+    res.json(rows)
+};
 exports.mostrarColectoresById = async (req, res) => {
     console.log(req.params)
     const [rows] = await db.query(
@@ -368,6 +394,7 @@ exports.mostrarColectoresById = async (req, res) => {
 
     res.json(rows)
 };
+
 exports.mostrarRegistros = async (req, res) => {
     try {
         const [rows] = await db.query(
