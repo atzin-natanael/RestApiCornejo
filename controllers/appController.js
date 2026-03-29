@@ -410,3 +410,26 @@ exports.mostrarRegistros = async (req, res) => {
         res.status(500).json({ mensaje: 'Error del servidor' })
     }
 };
+exports.eliminarRegistro = async (req, res) => {
+    const { id } = req.params; // Extraemos el ID de la URL
+
+    try {
+        // Ejecutamos la eliminación
+        const [result] = await connection.query(
+            'DELETE FROM ARTICULOS_INV_FISICO WHERE ID = ?', 
+            [id]
+        );
+
+        // Verificamos si realmente se eliminó algo
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ mensaje: 'No se encontró el registro con ese ID' });
+        }
+
+        // IMPORTANTE: Siempre responder algo para cerrar la conexión
+        res.json({ mensaje: 'Registro eliminado con éxito' });
+
+    } catch (error) {
+        console.error('Error al eliminar:', error);
+        res.status(500).json({ mensaje: 'Error interno del servidor al eliminar' });
+    }
+};
