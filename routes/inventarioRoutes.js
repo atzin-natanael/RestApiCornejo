@@ -5,6 +5,7 @@ const router = express.Router()
 router.post('/guardarRegistro',codigosController.guardarArticuloInventario)
 router.post('/eliminar-articulo/:id', codigosController.eliminarRegistro);
 router.get('/mostrarTabla/:id', codigosController.mostrarArticulosInventario)
+router.get('/mostrarTablaAdv/:id', codigosController.mostrarArticulosInventarioAdv)
 router.get('/colectores', codigosController.mostrarColectores)
 router.get('/colectores/:id', codigosController.mostrarColectoresById)
 router.get('/zonas', codigosController.mostrarZonas)

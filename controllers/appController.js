@@ -346,6 +346,31 @@ exports.mostrarArticulosInventario = async (req, res) => {
         res.status(500).json({ mensaje: 'Error del servidor' })
     }
 };
+exports.mostrarArticulosInventarioAdv = async (req, res) => {
+    const colectorId = req.params.id;
+    const zona = req.query;
+    console.log('query', req.query);
+    try {
+        const [rows] = await db.query(
+            `SELECT 
+                a.*, 
+                c.COLECTOR as NOMBRE_COLECTOR,
+                z.ZONA as NOMBRE_ZONA
+             FROM ARTICULOS_INV_FISICO a
+             INNER JOIN COLECTORES c ON a.COLECTOR_ID = c.COLECTOR_ID
+             INNER JOIN ZONAS z ON a.ZONA_ID = z.ZONA_ID
+             WHERE a.COLECTOR_ID = ? AND a.ZONA_ID = ?`,
+            [colectorId, zona]
+        );
+
+        // Siempre 200, aunque venga vacío
+        res.json(rows)
+        console.log(rows);
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ mensaje: 'Error del servidor' })
+    }
+};
 exports.mostrarColectores = async (req, res) => {
     try {
         const [rows] = await db.query(
