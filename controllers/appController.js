@@ -349,7 +349,7 @@ exports.mostrarArticulosInventario = async (req, res) => {
 exports.mostrarArticulosInventarioAdv = async (req, res) => {
     const colectorId = req.params.id;
     const zona = req.query.zona;
-    console.log('query', req.query);
+    console.log('query', req.query.zona);
     try {
         const [rows] = await db.query(
             `SELECT 
