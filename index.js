@@ -2,6 +2,7 @@ const express = require('express')
 const routes = require('./routes/appRoutes.js')
 const cotizacionRoutes = require('./routes/cotizacionesRoutes.js')
 const inventarioRoutes = require('./routes/inventarioRoutes.js')
+const pedidosRoutes = require('./routes/pedidosRoutes.js')
 const cors = require('cors');
 //const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
@@ -41,7 +42,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/', routes())
 app.use('/cotizacion', cotizacionRoutes)
 app.use('/inventario', inventarioRoutes)
-
+app.use('/pedidos', pedidosRoutes)
 //puerto
 const port = 3000
 app.listen(port, () =>{

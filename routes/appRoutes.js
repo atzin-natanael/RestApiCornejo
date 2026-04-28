@@ -17,6 +17,7 @@ module.exports = function(){
     router.get('/cotizaciones/edit/:COTIZACION_ID', codigosController.mostrarCotizacion)
     router.get('/cotizaciones/det/:COTIZACION_ID', codigosController.mostrarArticulos)
     router.post('/cotizaciones/cancelar/:COTIZACION_ID', codigosController.cancelarCotizacion)
+    router.post('/cotizaciones/cerrar/:COTIZACION_ID', codigosController.pedidoCreado)
     
     //router.post('/cotizaciones', codigosController.guardarCotizacionCompleta)
     //actualizar todo el registro

@@ -45,8 +45,7 @@ exports.mostrarCodigoByClaveCornejo = async (req, res) => {
 }
 exports.mostrarCodigosFull = async (req, res) => {
     try {
-        let { pagina = 1, termino = '', sort = 'NOMBRE', order = 'ASC' } = req.query;
-        console.log(pagina);
+        let { pagina = 1, termino = '', sort = 'NOMBRE', order = 'ASC', categoria= ''} = req.query;
         pagina = Number(pagina);
         if (pagina < 1) pagina = 1;
 
@@ -64,25 +63,50 @@ exports.mostrarCodigosFull = async (req, res) => {
         };
         const columnaOrden = columnasPermitidas[sort] || 'NOMBRE';
         order = order === 'DESC' ? 'DESC' : 'ASC';
+        let query;
+        let parametros;
+        if(!categoria){
+            query = `
+                SELECT 
+                    ART_ID,
+                    NOMBRE,
+                    CLAVE_ARTICULO,
+                    PRECIO,
+                    EXISTENCIA_A,
+                    EXISTENCIA_T,
+                    (EXISTENCIA_A + EXISTENCIA_T) AS TOTAL_EXISTENCIA,
+                    IMPUESTO,
+                    CONTENIDO_CAJA
+                FROM ARTICULOS_PAGWEB_ISI
+                WHERE NOMBRE LIKE ? OR CLAVE_ARTICULO LIKE ?
+                ORDER BY ${columnaOrden} ${order}
+                LIMIT ? OFFSET ?
+            `;
+            parametros= [termino, termino, limit, offset];
+        }else{
+            query = `
+                SELECT 
+                    ART_ID,
+                    NOMBRE,
+                    CLAVE_ARTICULO,
+                    PRECIO,
+                    EXISTENCIA_A,
+                    EXISTENCIA_T,
+                    (EXISTENCIA_A + EXISTENCIA_T) AS TOTAL_EXISTENCIA,
+                    IMPUESTO,
+                    CONTENIDO_CAJA
+                FROM ARTICULOS_PAGWEB_ISI
+                WHERE (NOMBRE LIKE ? OR CLAVE_ARTICULO LIKE ?)
+                    AND CATEGORIA_ID = ?
+                ORDER BY ${columnaOrden} ${order}
+                LIMIT ? OFFSET ?
+            `;
+                parametros= [termino, termino, categoria, limit, offset];
+        }
+        console.log('Query:', query, 'CATEGORÍA:', categoria);
 
-        const query = `
-            SELECT 
-                ART_ID,
-                NOMBRE,
-                CLAVE_ARTICULO,
-                PRECIO,
-                EXISTENCIA_A,
-                EXISTENCIA_T,
-                (EXISTENCIA_A + EXISTENCIA_T) AS TOTAL_EXISTENCIA,
-                IMPUESTO
-            FROM ARTICULOS_PAGWEB_ISI
-            WHERE NOMBRE LIKE ? OR CLAVE_ARTICULO LIKE ?
-            ORDER BY ${columnaOrden} ${order}
-            LIMIT ? OFFSET ?
-        `;
-
-        const [rows] = await db.query(query, [termino, termino, limit, offset]);
-
+        const [rows] = await db.query(query, parametros);
+        console.log('Resultados obtenidos:', rows[0]);
         // 📈 Total de registros (para paginación real)
         const [[{ total }]] = await db.query(
             `
@@ -109,11 +133,25 @@ exports.mostrarCodigosFull = async (req, res) => {
 }
 exports.mostrarCotizaciones = async (req, res) => {
     const CLIENTE_ID = req.params.CLIENTE_ID;
+    const { estatus } = req.query;
+    console.log(estatus);
     try {
-        const [rows] = await db.query(
-        'SELECT * FROM DOCTOS_COT WHERE CLIENTE_ID = ? AND ESTATUS != ?',
-        [CLIENTE_ID, 'CANCELADA'] // <--- Pasamos el texto como parámetro
-        );
+        let rows;
+        if (estatus) {
+            // Si hay un filtro de estatus específico
+            const [resultado] = await db.query(
+                'SELECT * FROM DOCTOS_COT WHERE CLIENTE_ID = ? AND ESTATUS = ? ORDER BY COTIZACION_ID DESC',
+                [CLIENTE_ID, estatus]
+            );
+            rows = resultado;
+        } else {
+            // Si no hay filtro, mostramos todo lo que no esté cancelado
+            const [resultado] = await db.query(
+                'SELECT * FROM DOCTOS_COT WHERE CLIENTE_ID = ? AND ESTATUS != ? ORDER BY COTIZACION_ID DESC',
+                [CLIENTE_ID, 'CANCELADA']
+            );
+            rows = resultado;
+        }
 
         // Siempre 200, aunque venga vacío
         res.json(rows)
@@ -150,7 +188,7 @@ exports.mostrarArticulos = async (req, res) => {
 
         // 2. Obtener el catálogo de nombres/precios de la tabla ISI
         const [articulosISI] = await db.query(
-            'SELECT ART_ID, NOMBRE, CLAVE_ARTICULO, PRECIO, EXISTENCIA_A, EXISTENCIA_T FROM ARTICULOS_PAGWEB_ISI'
+            'SELECT ART_ID, NOMBRE, CLAVE_ARTICULO, PRECIO, EXISTENCIA_A, EXISTENCIA_T, CONTENIDO_CAJA FROM ARTICULOS_PAGWEB_ISI'
         );
 
         // 3. Cruzar los datos (Inner Join Manual)
@@ -165,7 +203,9 @@ exports.mostrarArticulos = async (req, res) => {
                 // Calculamos existencia real sumando ambas columnas de la tabla ISI
                 EXISTENCIA: infoArt ? (Number(infoArt.EXISTENCIA_A) + Number(infoArt.EXISTENCIA_T)) : 0,
                 // Usamos el precio que viene de la tabla ISI como referencia actual
-                PRECIO: infoArt ? infoArt.PRECIO : linea.PRECIO 
+                PRECIO: infoArt ? infoArt.PRECIO : linea.PRECIO,
+                // Incluimos el contenido de la caja
+                CONTENIDO_CAJA: infoArt ? infoArt.CONTENIDO_CAJA : 1
             };
         });
 
@@ -190,7 +230,9 @@ exports.guardarCotizacionCompleta = async (req, res) => {
 
         // 1. Insertar Encabezado
         const [cotRes] = await connection.query(
-            'INSERT INTO DOCTOS_COT (CLIENTE_ID, COSTO_TOTAL, DESCRIPCION, ESTATUS, createdAt, updatedAt) VALUES (?, ?, ?, ?, NOW(), NOW())',
+            `INSERT INTO DOCTOS_COT 
+            (CLIENTE_ID, COSTO_TOTAL, DESCRIPCION, ESTATUS, FECHA_VENCIMIENTO, createdAt, updatedAt) 
+            VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 3 DAY), NOW(), NOW())`,
             [CLIENTE_ID, COSTO_TOTAL, DESCRIPCION, 'PENDIENTE']
         );
         const nuevoId = cotRes.insertId;
@@ -213,6 +255,49 @@ exports.guardarCotizacionCompleta = async (req, res) => {
         await connection.commit();
 
         res.json({ mensaje: 'Cotización y detalles guardados', id: nuevoId });
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ mensaje: 'Error al guardar detalle' });
+    } finally {
+        connection.release();
+    }
+};
+exports.guardarPedido = async (req, res) => {
+    console.log('Cuerpo de la solicitud:', req.body);
+    console.log('Content-Type recibido:', req.get('Content-Type'));
+    const { CLIENTE_ID, COTIZACION_ID, METODO_PAGO, FORMA_PAGO, USO_CFDI, COMENTARIOS, PORCENTAJE_DESCUENTO, COSTO_TOTAL, DESCRIPCION, DESCUENTO_CLIENTE, articulos } = req.body;
+    console.log('DESCUENTO CLIENTE', PORCENTAJE_DESCUENTO)
+    const connection = await db.getConnection(); // Obtener conexión para transacción
+
+    try {
+        await connection.beginTransaction();
+
+        // 1. Insertar Encabezado
+        const [cotRes] = await connection.query(
+            'INSERT INTO DOCTOS_PED (PEDIDO_ID, CLIENTE_ID, COSTO_TOTAL, DESCRIPCION, ESTATUS, METODO_DE_PAGO, FORMA_DE_PAGO, USO_DE_CFDI, COMENTARIOS, PORCENTAJE_DESCUENTO, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
+            [COTIZACION_ID, CLIENTE_ID, COSTO_TOTAL, DESCRIPCION, 'PENDIENTE', METODO_PAGO, FORMA_PAGO, USO_CFDI, COMENTARIOS, PORCENTAJE_DESCUENTO]
+        );
+        const nuevoId = cotRes.insertId;
+        console.log(cotRes);
+        console.log('detalle')
+        console.log('ARTICULOS DESDE GUARDAR API', articulos);
+        // 2. Insertar Detalle (recorremos el carrito)
+        const detallePromesas = articulos.map(art => {
+            const descuento = (art.CANTIDAD * art.PRECIO) * DESCUENTO_CLIENTE;
+            console.log(descuento);
+            const impuesto = (art.IMPORTE- descuento) * art.IMPUESTO; // Ejemplo: 16% de IVA
+            console.log('IMPUESTOS API', impuesto);
+            return connection.query(
+                'INSERT INTO DOCTOS_PED_DET (PEDIDO_ID, ART_ID, CLAVE_ARTICULO, PRECIO, CANTIDAD, DESCUENTO, IMPUESTO, IMPORTE, IMPORTE_TOTAL) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [nuevoId, art.ART_ID, art.CLAVE_ARTICULO, art.PRECIO, art.CANTIDAD, descuento, art.IMPUESTO, art.IMPORTE, art.IMPORTE_TOTAL]
+            );
+        });
+
+        await Promise.all(detallePromesas);
+        await connection.commit();
+
+        res.json({ mensaje: 'Pedido y detalles guardados', id: nuevoId });
     } catch (error) {
         await connection.rollback();
         console.error(error);
@@ -292,6 +377,32 @@ exports.cancelarCotizacion = async (req, res) => {
     } catch (error) {
         console.error("Error al cancelar:", error);
         res.status(500).json({ mensaje: 'Error del servidor al intentar cancelar' });
+    }
+};
+exports.pedidoCreado = async (req, res) => {
+    const { COTIZACION_ID } = req.params;
+
+    try {
+        // Ejecutamos el Update
+        const [result] = await db.query(
+            'UPDATE DOCTOS_COT SET ESTATUS = ? WHERE COTIZACION_ID = ?',
+            ['CERRADA', COTIZACION_ID]
+        );
+
+        // Verificamos si el ID existía y se actualizó
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ mensaje: 'Cotización no encontrada' });
+        }
+
+        // Si usas redirección (para formularios tradicionales)
+        // res.redirect('/cotizaciones/mis-cotizaciones'); 
+        console.log('COTIZACION CERRADA, PEDIDO CREADO') // Aquí podrías agregar lógica adicional, como enviar un correo o generar un PDF
+        // Si usas AJAX
+        res.json({ mensaje: 'Cotización cerrada con éxito' });
+
+    } catch (error) {
+        console.error("Error al cerrar:", error);
+        res.status(500).json({ mensaje: 'Error del servidor al intentar cerrar' });
     }
 };
 exports.guardarArticuloInventario = async (req, res) => {
@@ -458,3 +569,19 @@ exports.eliminarRegistro = async (req, res) => {
         res.status(500).json({ mensaje: 'Error interno del servidor al eliminar' });
     }
 };
+exports.mostrarPedidos = async (req, res) => {
+    const CLIENTE_ID = req.params.CLIENTE_ID;
+    try {
+        const [rows] = await db.query(
+        'SELECT * FROM DOCTOS_PED WHERE CLIENTE_ID = ? AND ESTATUS != ? ORDER BY PEDIDO_ID DESC',
+        [CLIENTE_ID, 'CANCELADA'] // <--- Pasamos el texto como parámetro
+        );
+
+        // Siempre 200, aunque venga vacío
+        res.json(rows)
+        console.log(rows);
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ mensaje: 'Error del servidor' })
+    }
+}
