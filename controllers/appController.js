@@ -148,7 +148,7 @@ exports.mostrarCotizaciones = async (req, res) => {
             // Si no hay filtro, mostramos todo lo que no esté cancelado
             const [resultado] = await db.query(
                 'SELECT * FROM DOCTOS_COT WHERE CLIENTE_ID = ? AND ESTATUS != ? ORDER BY COTIZACION_ID DESC',
-                [CLIENTE_ID, 'CANCELADA']
+                [CLIENTE_ID, 'PENDIENTE']
             );
             rows = resultado;
         }
