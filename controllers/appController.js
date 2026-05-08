@@ -135,6 +135,7 @@ exports.mostrarCotizaciones = async (req, res) => {
     const CLIENTE_ID = req.params.CLIENTE_ID;
     const { estatus } = req.query;
     console.log(estatus);
+    console.log('CLIENTE ID', CLIENTE_ID)
     try {
         let rows;
         if (estatus) {
