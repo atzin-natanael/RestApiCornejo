@@ -586,3 +586,30 @@ exports.mostrarPedidos = async (req, res) => {
         res.status(500).json({ mensaje: 'Error del servidor' })
     }
 }
+exports.mostrarClienteId = async (req, res) => {
+    const CLAVE_CLIENTE = req.params.CLAVE_CLIENTE;
+    try {
+        const [rows] = await db.query(
+            'SELECT * FROM CLIENTES_PAGWEB_ISI WHERE CLAVE_CLIENTE = ?',
+            [CLAVE_CLIENTE]
+        );
+        res.json(rows)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ mensaje: 'Error del servidor' })
+    }
+}
+exports.mostrarCliente = async (req, res) => {
+    const CLIENTE_ID = req.params.CLIENTE_ID;
+    try {
+        const [rows] = await db.query(
+            'SELECT * FROM CLIENTES_PAGWEB_ISI WHERE CLIENTE_ID = ?',
+            [CLIENTE_ID]
+        );
+        res.json(rows)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ mensaje: 'Error del servidor' })
+    }
+}
+
