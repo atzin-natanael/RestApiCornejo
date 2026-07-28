@@ -233,7 +233,7 @@ exports.guardarCotizacionCompleta = async (req, res) => {
         const [cotRes] = await connection.query(
             `INSERT INTO DOCTOS_COT 
             (CLIENTE_ID, COSTO_TOTAL, DESCRIPCION, ESTATUS, FECHA_VENCIMIENTO, createdAt, updatedAt) 
-            VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 3 DAY), NOW(), NOW())`,
+            VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 15 DAY), NOW(), NOW())`,
             [CLIENTE_ID, COSTO_TOTAL, DESCRIPCION, 'PENDIENTE']
         );
         const nuevoId = cotRes.insertId;
