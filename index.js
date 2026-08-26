@@ -21,7 +21,9 @@ const whitelist = [
     'http://localhost:3001', 
     'http://localhost:8000', 
     'https://paginainventariofisico.onrender.com',
-     'https://pedidos.isioffice.com'// Agrega tu URL de producción aquí
+    'https://paginacoribacornejo.onrender.com',
+     'https://pedidos.isioffice.com',
+     'https://pedidos.papeleriacornejo.com' // Agrega tu URL de producción aquí
 ];
 
 app.use(cors({
