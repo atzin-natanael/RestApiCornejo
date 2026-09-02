@@ -1,6 +1,9 @@
+const db = require('../config/db.js')
+
 exports.mostrarCodigosFull = async (req, res) => {
     try {
         let { pagina = 1, termino = '', sort = 'NOMBRE', order = 'ASC', categoria= ''} = req.query;
+        console.log('Parámetros recibidos:', { pagina, termino, sort, order, categoria });
         pagina = Number(pagina);
         if (pagina < 1) pagina = 1;
 
