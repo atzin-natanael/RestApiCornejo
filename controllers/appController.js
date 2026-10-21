@@ -415,7 +415,7 @@ exports.guardarArticuloInventario = async (req, res) => {
 
     try {
         await connection.beginTransaction();
-
+        console.log('colector', colector, 'zona', zona, 'codigo', codigo, 'descripcion', descripcion, 'cantidad', cantidad, 'almacen', almacen);
         // 1. Insertar Encabezado
         const [Res] = await connection.query(
             'INSERT INTO ARTICULOS_INV_FISICO (CLAVE_ARTICULO, DESCRIPCION, CONTADO, ZONA_ID, COLECTOR_ID, ALMACEN) VALUES (?, ?, ?, ?, ?, ?)',
