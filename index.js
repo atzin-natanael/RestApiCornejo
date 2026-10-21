@@ -1,9 +1,11 @@
 const express = require('express')
 const routes = require('./routes/appRoutes.js')
 const cotizacionRoutes = require('./routes/cotizacionesRoutes.js')
+const cotizacionCornejoRoutes = require('./routesCornejo/cotizacionesRoutes.js')
+const pedidosCornejoRoutes = require('./routesCornejo/pedidosRoutes.js')
 const inventarioRoutes = require('./routes/inventarioRoutes.js')
 const pedidosRoutes = require('./routes/pedidosRoutes.js')
-const routesCornejo = require('./routes/appRoutesCornejo.js')
+const routesCornejo = require('./routesCornejo/appRoutes.js')
 const cors = require('cors');
 //const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
@@ -48,6 +50,8 @@ app.use('/cotizacion', cotizacionRoutes)
 app.use('/inventario', inventarioRoutes)
 app.use('/pedidos', pedidosRoutes)
 app.use('/apicornejo', routesCornejo())
+app.use('/cornejo/cotizacion', cotizacionCornejoRoutes)
+app.use('/cornejo/pedidos', pedidosRoutes)
 //puerto
 const port = 3000
 app.listen(port, () =>{

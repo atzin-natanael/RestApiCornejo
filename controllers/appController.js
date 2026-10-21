@@ -436,6 +436,7 @@ exports.guardarArticuloInventario = async (req, res) => {
     }
 };
 exports.mostrarArticulosInventario = async (req, res) => {
+
     const colectorId = req.params.id;
     try {
         const [rows] = await db.query(
