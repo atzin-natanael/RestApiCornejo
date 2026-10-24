@@ -11,6 +11,7 @@ module.exports = function(){
 
     router.get('/', codigosController.Start)
     router.get('/codigos/:idCodigo', codigosController.mostrarCodigo)
+    router.get('/codigosInv/:idCodigo', codigosController.mostrarCodigoInventario)
     router.get('/codigobyclave/:idCodigo', codigosController.mostrarCodigoByClave)
     router.get('/codigobyclaveCornejo/:idCodigo', codigosController.mostrarCodigoByClaveCornejo)
     router.get('/codigos', codigosController.mostrarCodigosFull)

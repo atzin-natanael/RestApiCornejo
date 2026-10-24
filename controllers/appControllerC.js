@@ -107,6 +107,19 @@ exports.mostrarCodigo = async (req, res) => {
 
     res.json(rows)
 }
+exports.mostrarCodigoInventario = async (req, res) => {
+    console.log(req.params)
+    const [rows] = await dbCornejo.query(
+        'SELECT * FROM inventariogeneral WHERE Codigo = ?',
+        [req.params.idCodigo]
+    )
+
+    if (rows.length === 0) {
+        return res.status(404).json({ mensaje: 'No existe' })
+    }
+
+    res.json(rows)
+}
 exports.mostrarCodigoByClave = async (req, res) => {
     console.log(req.params)
     const [rows] = await dbCornejo.query(
