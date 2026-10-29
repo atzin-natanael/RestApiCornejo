@@ -133,6 +133,19 @@ exports.mostrarCodigoByClave = async (req, res) => {
 
     res.json(rows)
 }
+exports.mostrarCodigoByBarcode = async (req, res) => {
+    console.log(req.params)
+    const [rows] = await dbCornejo.query(
+        'SELECT * FROM CLAVES_ARTICULOS WHERE CODIGO = ?',
+        [req.params.idCodigo]
+    )
+
+    if (rows.length === 0) {
+        return res.status(404).json({ mensaje: 'No existe' })
+    }
+
+    res.json(rows)
+}
 exports.mostrarCodigoByClaveCornejo = async (req, res) => {
     console.log(req.params)
     const [rows] = await dbCornejo.query(
