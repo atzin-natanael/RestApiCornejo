@@ -1,6 +1,7 @@
 const express= require('express')
 const codigosController = require('../controllers/appControllerC.js')
 const router= express.Router()
+const validateToken = require('../middleware/validarKey.js')
 
 module.exports = function(){
     //Agrega nuevos codigos via POST
@@ -12,10 +13,10 @@ module.exports = function(){
     router.get('/', codigosController.Start)
     router.get('/codigos/:idCodigo', codigosController.mostrarCodigo)
     router.get('/codigosInv/:idCodigo', codigosController.mostrarCodigoInventario)
-    router.get('/codigobyclave/:idCodigo', codigosController.mostrarCodigoByClave)
-    router.get('/codigobybarcode/:idCodigo', codigosController.mostrarCodigoByBarcode)
+    router.get('/codigobyclave/:idCodigo', validateToken, codigosController.mostrarCodigoByClave)
+    router.get('/codigobybarcode/:idCodigo', validateToken, codigosController.mostrarCodigoByBarcode)
     router.get('/codigobyclaveCornejo/:idCodigo', codigosController.mostrarCodigoByClaveCornejo)
-    router.get('/codigos', codigosController.mostrarCodigosFull)
+    router.get('/codigos', validateToken, codigosController.mostrarCodigosFull)
     router.get('/cotizaciones/:CLIENTE_ID', codigosController.mostrarCotizaciones)
     router.get('/cotizaciones/edit/:COTIZACION_ID', codigosController.mostrarCotizacion)
     router.get('/cotizaciones/det/:COTIZACION_ID', codigosController.mostrarArticulos)
