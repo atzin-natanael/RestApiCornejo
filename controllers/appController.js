@@ -409,17 +409,17 @@ exports.pedidoCreado = async (req, res) => {
 exports.guardarArticuloInventario = async (req, res) => {
     console.log('Cuerpo de la solicitud:', req.body);
     console.log('Content-Type recibido:', req.get('Content-Type'));
-    const {colector, zona, codigo, descripcion, cantidad} = req.body;
+    const {colector, zona, codigo, descripcion, cantidad, codigo_barra} = req.body;
     
     const connection = await db.getConnection(); // Obtener conexión para transacción
 
     try {
         await connection.beginTransaction();
-        console.log('colector', colector, 'zona', zona, 'codigo', codigo, 'descripcion', descripcion, 'cantidad', cantidad, 'almacen', "HIDALGO");
+        console.log('colector', colector, 'zona', zona, 'codigo', codigo_barra, 'descripcion', descripcion, 'cantidad', cantidad, 'almacen', "HIDALGO");
         // 1. Insertar Encabezado
         const [Res] = await connection.query(
             'INSERT INTO ARTICULOS_INV_FISICO (CLAVE_ARTICULO, DESCRIPCION, CONTADO, ZONA_ID, COLECTOR_ID, ALMACEN) VALUES (?, ?, ?, ?, ?, ?)',
-            [codigo, descripcion, cantidad, zona, colector, "HIDALGO"]
+            [codigo_barra, descripcion, cantidad, zona, colector, "HIDALGO"]
         );
         //await Promise.all(detallePromesas);
         await connection.commit();
