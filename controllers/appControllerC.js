@@ -144,7 +144,9 @@ exports.mostrarCodigoByBarcode = async (req, res) => {
         return res.status(404).json({ mensaje: 'No existe' })
     }
 
+
     res.json(rows)
+    console.log('devuelveeeeeeeeeeeeee', rows)
 }
 exports.mostrarCodigoByClaveCornejo = async (req, res) => {
     console.log(req.params)
