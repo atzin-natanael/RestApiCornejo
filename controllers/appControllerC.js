@@ -708,7 +708,7 @@ exports.mostrarClienteId = async (req, res) => {
     const CLAVE_CLIENTE = req.params.CLAVE_CLIENTE;
     try {
         const [rows] = await dbCornejo.query(
-            'SELECT * FROM CLIENTES_PAGWEB_CORNEJO WHERE CLAVE_CLIENTE = ?',
+            'SELECT * FROM CLIENTES_CORNEJO WHERE CLAVE_CLIENTE = ?',
             [CLAVE_CLIENTE]
         );
         res.json(rows)
